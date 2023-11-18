@@ -18,7 +18,7 @@ player_speed = 3
 
 # Create Pygame screen
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Dark Souls-like Side Scroller")
+pygame.display.set_caption("Souls-like Side Scroller")
 clock = pygame.time.Clock()
 
 # Game loop
