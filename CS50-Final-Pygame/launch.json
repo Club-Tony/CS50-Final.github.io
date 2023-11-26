@@ -5,7 +5,7 @@
         "name": "Python: Pygame",
         "type": "python",
         "request": "launch",
-        "program": "${workspaceFolder}/your_script.py",
+        "program": "${workspaceFolder}/CS50-Final-Pygame/pygameFinal.py",
         "args": [],
         "cwd": "${workspaceFolder}",
         "env": {},
