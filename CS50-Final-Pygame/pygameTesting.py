@@ -1,109 +1,77 @@
 import pygame
-from pygame.locals import *
-import os
-import sys
-import math
 
+# initialize all pygame modules
 pygame.init()
 
-W, H = 800, 447
-win = pygame.display.set_mode((W,H))
-pygame.display.set_caption('Side Scroller')
-
-bg = pygame.image.load(os.path.join('images','bg.png')).convert()
-bgX = 0
-bgX2 = bg.get_width()
-
+# set clock and fps so game runs at intended speed
 clock = pygame.time.Clock()
+FPS = 60
 
-class player(object):
-    run = [pygame.image.load(os.path.join('images', str(x) + '.png')) for x in range(8,16)]
-    jump = [pygame.image.load(os.path.join('images', str(x) + '.png')) for x in range(1,8)]
-    slide = [pygame.image.load(os.path.join('images', 'S1.png')),pygame.image.load(os.path.join('images', 'S2.png')),pygame.image.load(os.path.join('images', 'S2.png')),pygame.image.load(os.path.join('images', 'S2.png')), pygame.image.load(os.path.join('images', 'S2.png')),pygame.image.load(os.path.join('images', 'S2.png')), pygame.image.load(os.path.join('images', 'S2.png')), pygame.image.load(os.path.join('images', 'S2.png')), pygame.image.load(os.path.join('images', 'S3.png')), pygame.image.load(os.path.join('images', 'S4.png')), pygame.image.load(os.path.join('images', 'S5.png'))]
-    jumpList = [1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,-1,-1,-1,-1,-1,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-3,-3,-3,-3,-3,-3,-3,-3,-3,-3,-3,-3,-4,-4,-4,-4,-4,-4,-4,-4,-4,-4,-4,-4]
-    def __init__(self, x, y, width, height):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-        self.jumping = False
-        self.sliding = False
-        self.slideCount = 0
-        self.jumpCount = 0
-        self.runCount = 0
-        self.slideUp = False
+# Set display size and name it, so it adjusts based off user's resolution, and makes a windowed screen)
+resolution_info = pygame.display.Info()
+screen = pygame.display.set_mode((int(resolution_info.current_w * 0.93), 
+                                  int(resolution_info.current_h * 0.93)))
+pygame.display.set_caption("Parallax")
 
-    def draw(self, win):
-        if self.jumping:
-            self.y -= self.jumpList[self.jumpCount] * 1.2
-            win.blit(self.jump[self.jumpCount//18], (self.x,self.y))
-            self.jumpCount += 1
-            if self.jumpCount > 108:
-                self.jumpCount = 0
-                self.jumping = False
-                self.runCount = 0
-        elif self.sliding or self.slideUp:
-            if self.slideCount < 20:
-                self.y += 1
-            elif self.slideCount == 80:
-                self.y -= 19
-                self.sliding = False
-                self.slideUp = True
-            if self.slideCount >= 110:
-                self.slideCount = 0
-                self.slideUp = False
-                self.runCount = 0
-            win.blit(self.slide[self.slideCount//10], (self.x,self.y))
-            self.slideCount += 1
-            
-        else:
-            if self.runCount > 42:
-                self.runCount = 0
-            win.blit(self.run[self.runCount//6], (self.x,self.y))
-            self.runCount += 1
-            
+# define game variables(scrolling)
+scroll = 0
+
+# load in background images, create list, loop, load image layers
+# blank list
+backgrounds = []
+
+# loop, make range 1-9 since I have 8 images that need to be loaded, 
+# f-string to make it so {i} replaced with the value of i in each iteration of loop, note the subdirectories
+# convert_alpha to convert image and maintain transparency
+for i in range(1, 9):
+    background = pygame.image.load(f"The_Dawn(parallax_scrolling_background)/Layers/{i}.png").convert_alpha()
+    
+    # make it so backgrounds fit to screen size
+    background = pygame.transform.scale(background, (resolution_info.current_w, resolution_info.current_h))
+    
+    # append to add the loaded images into my list (backgrounds)
+    backgrounds.append(background)
+    
+# determine background image width (will allow for srolling later)
+background_width = backgrounds[0].get_width()
+    
+# draw images onto screen, iterate through list
+def draw_background():
+    # x variable loop so images draw next to eachother
+    for x in range(5):
+        # set different speeds of background layers to create parallax effect,
+        # scroll * speed so scroll variable will be adjusted based on speed that each image is set to
+        speed = 1
+        # note that here the furthest image is being drawn first, closest image drawn last
+        for i in backgrounds:
+            screen.blit(i, ((x * background_width) - scroll * speed, 0))
+            # increase speed at each iteration
+            speed += 0.2
+
+# game loop, with forever repeating while loop (when run = true)
 run = True
-speed = 30  # NEW
-
 while run:
-    clock.tick(speed)  # NEW
-    bgX -= 1.4  # Move both background images back
-    bgX2 -= 1.4
-
-    if bgX < bg.get_width() * -1:  # If our bg is at the -width then reset its position
-        bgX = bg.get_width()
+    # cap frame rate
+    clock.tick(FPS)
     
-    if bgX2 < bg.get_width() * -1:
-        bgX2 = bg.get_width()
-
-    for event in pygame.event.get():  
-        if event.type == pygame.QUIT: 
-            run = False    
-            pygame.quit() 
-            quit()
+    # draw background in game loop
+    draw_background()
+    
+    # keybinds, make a limit so you can only go left a certain amount (since images only properly scroll right)
+    key = pygame.key.get_pressed()
+    if key[pygame.K_LEFT] and scroll > 0:
+        scroll -= 5
+    if key[pygame.K_RIGHT] and scroll < 5000: 
+        scroll += 5
+    
+    # event handler for ending loop
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
             
-        if event.type == USEREVENT+1: # Checks if timer goes off
-            speed += 1 # Increases speed
-
-    clock.tick(speed)
+    # update display
+    pygame.display.update()
     
-    keys = pygame.key.get_pressed()
-
-    if keys[pygame.K_SPACE] or keys[pygame.K_UP]: # If user hits space or up arrow key
-        if not(runner.jumping):  # If we are not already jumping
-            runner.jumping = True
-
-    if keys[pygame.K_DOWN]:  # If user hits down arrow key
-        if not(runner.sliding):  # If we are not already sliding
-            runner.sliding = True
+# if loop ends, game quits    
+pygame.quit()
     
-    def redrawWindow():
-        win.blit(bg, (bgX, 0))  # draws our first bg image
-        win.blit(bg, (bgX2, 0))  # draws the seconf bg image
-        pygame.display.update()  # updates the screen
-
-    def redrawWindow():
-        win.blit(bg, (bgX, 0))  
-        win.blit(bg, (bgX2, 0))
-        runner.draw(win) # NEW
-        pygame.display.update() 
