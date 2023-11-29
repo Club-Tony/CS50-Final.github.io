@@ -20,21 +20,16 @@ scroll = 0
 # load ground background layers so they can be set manually at different speeds (7.png, 8.png)
 ground_image_1 = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\Island\\Layers\\L5.png").convert_alpha()
 
-# make it so ground fits to screen size
-ground_image_1 = pygame.transform.scale(ground_image_1, (screen_width, screen_height))
-
 # get ground background width and height, just getting for ground_image_1 cause 1 and 2 should be the same 
 ground_width = ground_image_1.get_width()
 ground_height = ground_image_1.get_height()
 
 # load water layers
 water_mountains = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\Island\\Layers\\L3.png").convert_alpha()
-water_mountains = pygame.transform.scale(water_mountains, (screen_width, screen_height))
 water_mountains_width = water_mountains.get_width()
 water_mountains_height = water_mountains.get_height()
 
 water_trees = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\Island\\Layers\\L4.png").convert_alpha()
-water_trees = pygame.transform.scale(water_trees, (screen_width, screen_height))
 water_trees_width = water_trees.get_width()
 water_trees_height = water_trees.get_height()
 
@@ -49,9 +44,6 @@ backgrounds = []
 # convert_alpha to convert image and maintain transparency
 for i in range(1, 3):
     background = pygame.image.load(f"Island/Layers/L{i}.png").convert_alpha()
-    
-    # make it so backgrounds fit to screen size
-    background = pygame.transform.scale(background, (screen_width, screen_height))
     
     # append to add the loaded images into my list (backgrounds)
     backgrounds.append(background)

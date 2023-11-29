@@ -1,120 +1,119 @@
-import sys, pygame
-import random
+import pygame
 
+# initialize all pygame modules
 pygame.init()
 
-# Set display size so it adjusts based off user's resolution, and makes a windowed screen)
-resolution_info = pygame.display.Info()
-screen = pygame.display.set_mode((int(resolution_info.current_w * 0.93), 
-                                  int(resolution_info.current_h * 0.93)))
-
-# Set sprite (player) speed and clock (for controlling framerate)
-speed = 5
+# set clock and fps so game runs at intended speed
 clock = pygame.time.Clock()
+FPS = 60
 
-# Set up scrolling parallax background img, 2 of each of the 8 layers, place each side by side
-background_1 = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\The_Dawn(parallax_scrolling_background)\\Layers\\1.png")
-background_1 = pygame.transform.scale(background_1, (resolution_info.current_w * 0.93, resolution_info.current_h * 0.93))
-background_1_copy = background_1
+# Set display size and name it (setting )
+screen_width = 1920
+screen_height = 1080
 
-background_2 = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\The_Dawn(parallax_scrolling_background)\\Layers\\2.png")
-background_2 = pygame.transform.scale(background_2, (resolution_info.current_w * 0.93, resolution_info.current_h * 0.93))
-background_2_copy = background_2
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption("Sunset Run")
 
-background_3 = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\The_Dawn(parallax_scrolling_background)\\Layers\\3.png")
-background_3 = pygame.transform.scale(background_3, (resolution_info.current_w * 0.93, resolution_info.current_h * 0.93))
-background_3_copy = background_3
+# define game variables(scrolling)
+scroll = 0
 
-background_4 = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\The_Dawn(parallax_scrolling_background)\\Layers\\4.png")
-background_4 = pygame.transform.scale(background_4, (resolution_info.current_w * 0.93, resolution_info.current_h * 0.93))
-background_4_copy = background_4
+# load ground background layers so they can be set manually at different speeds (7.png, 8.png)
+ground_image_1 = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\Island\\Layers\\L5.png").convert_alpha()
 
-background_5 = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\The_Dawn(parallax_scrolling_background)\\Layers\\5.png")
-background_5 = pygame.transform.scale(background_5, (resolution_info.current_w * 0.93, resolution_info.current_h * 0.93))
-background_5_copy = background_5
+# get ground background width and height, just getting for ground_image_1 cause 1 and 2 should be the same 
+ground_width = ground_image_1.get_width()
+ground_height = ground_image_1.get_height()
 
-background_6 = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\The_Dawn(parallax_scrolling_background)\\Layers\\6.png")
-background_6 = pygame.transform.scale(background_6, (resolution_info.current_w * 0.93, resolution_info.current_h * 0.93))
-background_6_copy = background_6
+# load water layers
+water_mountains = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\Island\\Layers\\L3.png").convert_alpha()
+water_mountains_width = water_mountains.get_width()
+water_mountains_height = water_mountains.get_height()
 
-background_7 = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\The_Dawn(parallax_scrolling_background)\\Layers\\7.png")
-background_7 = pygame.transform.scale(background_7, (resolution_info.current_w * 0.93, resolution_info.current_h * 0.93))
-background_7_copy = background_7
+water_trees = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\Island\\Layers\\L4.png").convert_alpha()
+water_trees_width = water_trees.get_width()
+water_trees_height = water_trees.get_height()
 
-background_8 = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\The_Dawn(parallax_scrolling_background)\\Layers\\8.png")
-background_8 = pygame.transform.scale(background_8, (resolution_info.current_w * 0.93, resolution_info.current_h * 0.93))
-background_8_copy = background_8
+# load in background images, create list, loop, load image layers
+# blank list
+backgrounds = []
 
-# Create sprite (player) and shrink size
-player = pygame.image.load("blackhole.gif")
-player = pygame.transform.scale(player, (50, 50))
+# loop, make range 1-3 since I have 2 bg image layers that need to be loaded, 1 ground image for later (L5)
+# and 2 other layers that need to be at their own speed 
+# f-string to make it so {i} replaced with the value of i in each iteration of loop, note the subdirectories
+# and include L before {i} because each of my .png starts with an L before the number i.e. (L1.png)
+# convert_alpha to convert image and maintain transparency
+for i in range(1, 3):
+    background = pygame.image.load(f"Island/Layers/L{i}.png").convert_alpha()
+    
+    # append to add the loaded images into my list (backgrounds)
+    backgrounds.append(background)
+    
+# determine background image width (will allow for srolling later)
+background_width = backgrounds[0].get_width()
+    
+# draw "background" images (far mountains, and clouds) onto screen, iterate through list
+def draw_background():
+    # x variable loop so images draw next to eachother
+    # note: range is number of each layer being loaded, so in this case getting to 25 can be the end of game
+    for x in range(26):
+        # set different speeds of background layers to create parallax effect,
+        # scroll * speed so scroll variable will be adjusted based on speed that each image is set to
+        speed = 0.5
+        # note: the furthest image (far mountains) is being drawn first, closest image (clouds) drawn last
+        for i in backgrounds:
+            screen.blit(i, ((x * background_width) - scroll * speed, 0))
+            # increase speed at each iteration, this will make clouds move 0.3 faster than far mountains
+            speed += 0.2
+            
+# draw ground images onto screen, they will be moving at a different speed so doing separately
+# range of 26 since game stops scrolling further right at 25 range (36,000 pixels)
+def draw_ground():
+    for x in range(26):
+        screen.blit(ground_image_1, ((x * ground_width) - scroll * 6.6, 0))
+        
+# draw the 2 different water images onto screen
+def draw_water_mountains():
+    for x in range (26):
+        screen.blit(water_mountains, ((x * water_mountains_width) - scroll * 1.2, 0))
+        
+def draw_water_trees():
+    for x in range (26):
+        screen.blit(water_trees, ((x * water_trees_width) - scroll * 1.2, 0))
 
-# Set screen_width and height to allow for random sprite starting point, and get rect for player
-screen_width = int(resolution_info.current_w * 0.93)
-screen_height = int(resolution_info.current_h * 0.93)
-
-random_x = random.uniform(350, screen_width)
-random_y = random.uniform(350, screen_height)
-
-player_rect = player.get_rect()
-player_rect.centerx = random_x
-player_rect.centery = random_y
-
-# Setup double buffering:
-buffer = pygame.Surface((resolution_info.current_w, resolution_info.current_h))
-
-# Game Loop (handling events). First, if quit, end loop:
-running = True
-while running:
+# game loop, with forever repeating while loop (when run = true)
+run = True
+while run:
+    # cap frame rate
+    clock.tick(FPS)
+    
+    # draw background, water/tree/close mountains layers, and ground in game loop
+    draw_background()
+    draw_water_mountains()
+    draw_water_trees()
+    draw_ground()
+    
+    # keybinds, make a limit so you can only go left a certain amount (since images only properly scroll right)
+    # 0 for left so can't go left unless already travelled to the right a given amount
+    # 36,000 for right because this pixel count matches the set range for x of 25 (25 img layers side by side)
+    key = pygame.key.get_pressed()
+    if key[pygame.K_LEFT] and scroll > 0:
+        scroll -= 1.5
+    if key[pygame.K_RIGHT] and scroll < 36000: 
+        scroll += 1.5
+    
+    # event handler for ending loop
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-                running = False
-                
-    # Keybinds:
-    keys = pygame.key.get_pressed()   
-           
-    if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-        player_rect.x -= speed
-        
+            run = False
+            
+    # update display
     pygame.display.update()
     
-    # Clear buffer before drawing
-    buffer.fill((0, 0, 0))
+# if loop ends, game quits    
+pygame.quit()
+
     
-    # blit backgrounds (=should be drawn first, before the sprite or anything else) setup for parallax scroll
-    buffer.blit(background_1, (0, 0))
-    buffer.blit(background_1_copy, (screen_width, 0))
     
-    buffer.blit(background_2, (0, 0))
-    buffer.blit(background_2_copy, (screen_width, 0))
-    
-    buffer.blit(background_3, (0, 0))
-    buffer.blit(background_3_copy, (screen_width, 0))
-    
-    buffer.blit(background_4, (0, 0))
-    buffer.blit(background_4_copy, (screen_width, 0))
-    
-    buffer.blit(background_5, (0, 0))
-    buffer.blit(background_5_copy, (screen_width, 0))
-    
-    buffer.blit(background_6, (0, 0))
-    buffer.blit(background_6_copy, (screen_width, 0))
-    
-    buffer.blit(background_7, (0, 0))
-    buffer.blit(background_7_copy, (screen_width, 0))
-    
-    buffer.blit(background_8, (0, 0))
-    buffer.blit(background_8_copy, (screen_width, 0))
-    
-    # blit 'player' (draws img onto screen)
-    buffer.blit(player, player_rect)
-    
-    # Swap buffer with screen
-    screen.blit(buffer, (0, 0))
-    pygame.display.flip()
-    
-    # Set FPS
-    clock.tick(60)
-    
-pygame.quit()   
-sys.exit()
+# Credits: 
+# Code: Anthony Davey
+# Free background layers: https://saurabhkgp.itch.io/the-island-parallax-background-platformer-side-scroller
