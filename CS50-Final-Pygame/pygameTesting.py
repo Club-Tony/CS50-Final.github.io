@@ -63,7 +63,7 @@ def draw_background():
         for i in backgrounds:
             screen.blit(i, ((x * background_width) - scroll * speed, 0))
             # increase speed at each iteration, this will make clouds move 0.3 faster than far mountains
-            speed += 0.2
+            speed += 0.3
             
 # draw ground images onto screen, they will be moving at a different speed so doing separately
 # range of 26 since game stops scrolling further right at 25 range (36,000 pixels)
@@ -86,6 +86,15 @@ while run:
     # cap frame rate
     clock.tick(FPS)
     
+    # event handler for ending loop
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+            
+    # enable double-buffering (for smoother rendering), start by clearing screen with white or black bg
+    # note: double buffering didn't end up fixing my issue with L2.png, but keeping it in anyway
+    screen.fill((0, 0, 0))
+    
     # draw background, water/tree/close mountains layers, and ground in game loop
     draw_background()
     draw_water_mountains()
@@ -101,19 +110,14 @@ while run:
     if key[pygame.K_RIGHT] and scroll < 36000: 
         scroll += 1.5
     
-    # event handler for ending loop
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
-            
     # update display
-    pygame.display.update()
+    pygame.display.flip()
     
 # if loop ends, game quits    
 pygame.quit()
 
     
-    
+        
 # Credits: 
 # Code: Anthony Davey
 # Free background layers: https://saurabhkgp.itch.io/the-island-parallax-background-platformer-side-scroller
