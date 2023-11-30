@@ -42,7 +42,7 @@ backgrounds = []
 # f-string to make it so {i} replaced with the value of i in each iteration of loop, note the subdirectories
 # and include L before {i} because each of my .png starts with an L before the number i.e. (L1.png)
 # convert_alpha to convert image and maintain transparency
-for i in range(1, 3):
+for i in range(1, 2):
     background = pygame.image.load(f"Island/Layers/L{i}.png").convert_alpha()
     
     # append to add the loaded images into my list (backgrounds)
@@ -69,7 +69,7 @@ def draw_background():
 # range of 26 since game stops scrolling further right at 25 range (36,000 pixels)
 def draw_ground():
     for x in range(26):
-        screen.blit(ground_image_1, ((x * ground_width) - scroll * 6.6, 0))
+        screen.blit(ground_image_1, ((x * ground_width) - scroll * 6, 0))
         
 # draw the 2 different water images onto screen
 def draw_water_mountains():
@@ -117,6 +117,7 @@ while run:
 pygame.quit()
 
     
+# IDEAS (notes for me): Maybe have a bed at the end, that you can sleep in, when you wake up it's night or day
         
 # Credits: 
 # Code: Anthony Davey
