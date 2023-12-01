@@ -5,9 +5,12 @@ import sys
 # initialize all pygame modules
 pygame.init()
 
-# set clock and fps so game runs at intended speed
+# set clock and fps so game runs at intended speed, set night cycle clock
 clock = pygame.time.Clock()
 FPS = 60
+
+nighttime = 0
+fade_black = 0
 
 # get display info/set default width/height of game screen
 resolution = pygame.display.Info()
@@ -29,6 +32,33 @@ fullscreen_toggle = False
 
 # define game variables(scrolling)
 scroll = 0
+
+# load sprite
+sprite = pygame.image.load("Player/1.png").convert_alpha()
+sprite_width = sprite.get_width()
+sprite_height = sprite.get_height()
+# include another copy of sprite width and height for use later in game loop when adjusting - 
+# window size since sprite_width and sprite_height values get changed
+initial_sprite_width = sprite.get_width()
+initial_sprite_height = sprite.get_height()
+
+# set adjust percentage for height of sprite adjustment
+y_adjust_percentage = 0.09
+y_adjust = int(screen_height * y_adjust_percentage)
+
+# define sprite_position for this initial draw (pre using fullscreen toggle)
+sprite_position = ((screen_width // 2) - (sprite_width // 2), screen_height - sprite_height - y_adjust)
+    
+# draw sprite
+def draw_sprite(screen_width, screen_height, sprite_position):
+    
+    # resize sprite to account for toggle fullscreen
+    width_adjust = int(sprite_width * (screen_width / 1920))
+    height_adjust = int(sprite_height * (screen_height / 1080))   
+    resized_sprite = pygame.transform.scale(sprite, (width_adjust, height_adjust))
+    
+    # use sprite_position to draw sprite
+    screen.blit(resized_sprite, sprite_position)
 
 # load backgrounds starting with ground:
 # note: loading all 1 by 1 instead of list so I have full control over individual .png scrolling speed
@@ -102,11 +132,54 @@ def resize_images(images, screen_width, screen_height):
 
 resized_images = resize_images(images_list, screen_width, screen_height)
 
+# NIGHTTIME
+# transparent tint with same size as screen (double parentheses for representing rgb values)
+night_tint = pygame.Surface((screen_width, screen_height))
+
+# dark blue color for tint 
+night_tint.fill((0, 0, 128))
+
+# alpha value of tint to set transparency, create variable to use in if statement in game loop
+# max_opacity = 218 so so it matches max alpha_value
+max_opacity = 218
+
+# fade to black
+black_tint = pygame.Surface((screen_width, screen_height))
+
+# game over text
+# create font object None makes it pygame default font, otherwise need to use loaded font, 2nd arg = size
+game_over = pygame.font.Font(None, 50)
+
+# ...
+
 # GAME LOOP, with forever repeating while loop (when run = true)
 run = True
 while run:
     # cap frame rate
     clock.tick(FPS)
+    
+    # increment night cycle
+    nighttime += 11.03 
+    
+    # min function takes any # of arguments, returns the smallest of arguments provided
+    color_value = min(nighttime, 128)
+    alpha_value = min(nighttime, 218)
+    
+    # update night tint with color and alpha value on each iteration
+    night_tint.fill((0, 0, color_value))
+    night_tint.set_alpha(alpha_value)
+    
+    # increment fade to black when night is at its darkest
+    if alpha_value >= max_opacity:
+        # if statement so fade_black doesn't exceed 255
+        if fade_black < 255:
+            fade_black += 1
+        
+    black_alpha_value = min(fade_black, 255) # 255 for full opacity
+        
+    # update black tint
+    black_tint.fill((0, 0, 0))
+    black_tint.set_alpha(black_alpha_value)
     
     # event handler for ending loop
     for event in pygame.event.get():
@@ -128,6 +201,9 @@ while run:
             # pygame.key.get_mods to check the state of modifier keys, i.e. the alt keys
             elif event.key in [pygame.K_F11] or (event.key == pygame.K_RETURN and pygame.key.get_mods() & pygame.KMOD_ALT):
                 
+                # not makes this False boolean variable True
+                fullscreen_toggle = not fullscreen_toggle 
+                
                 # toggle windowed/fullscreen
                 if fullscreen_toggle:
                     screen_width = 1920 * 0.5
@@ -145,52 +221,63 @@ while run:
                 # resized images variable for including images list with screen height and width
                 resized_images = resize_images(images_list, screen_width, screen_height)
                 
+                # Adjust sprite position if screen size is reduced
+                # start by specifically adjusting its height since it's scuffed
+                if screen_width < 1920:
+                    sprite_height = 130
+                    # calculate what the corresponding new width would be to avoid distoring the image
+                    initial_sprite_aspect_ratio = initial_sprite_width / initial_sprite_height
+                    sprite_width = sprite_height * initial_sprite_aspect_ratio
+                else:
+                    sprite_width = initial_sprite_width
+                    sprite_height = initial_sprite_height
+                    
+                if screen_width == 1920 * 0.5 and screen_height == 1080 * 0.5:
+                    sprite_position = ((screen_width // 2) - (sprite_width // 2), screen_height * 0.78)  
+                else: 
+                    sprite_position = ((screen_width // 2) - (sprite_width // 2), screen_height - sprite_height - y_adjust)
+                    
+                # set display mode after determining screen width/height changes, but before drawing
+                pygame.display.set_mode((screen_width, screen_height))          
+                         
                 draw_far_mountains(resized_images)
                 draw_sun(resized_images)
                 draw_clouds(resized_images)
                 draw_water_mountains(resized_images)
                 draw_water_trees(resized_images)
                 draw_ground(resized_images)
-
-                # set display mode 
-                pygame.display.set_mode((screen_width, screen_height))
-                
-                # not makes this False boolean variable True
-                fullscreen_toggle = not fullscreen_toggle 
+                # draw sprite
+                draw_sprite(screen_width, screen_height, sprite_position)
             
-    # enable double-buffering (for smoother rendering), start by clearing screen with white or black bg
-    # note: double buffering didn't end up being the fix for earlier image blending issue but keeping it in anyway
+    # enable double-buffering (for smoother rendering), start by clearing screen with a white or black bg
+    # note: double buffering didn't end up being the fix for the earlier image blending issue but keeping it in anyway
     screen.fill((0, 0, 0))
     
-    # draw background layers (these are the how they're drawn by default, before user toggles fullscreen)
+    # draw background layers (these are how they're drawn by default, before the user toggles fullscreen)
     draw_far_mountains(resized_images)
     draw_sun(resized_images)
     draw_clouds(resized_images)
     draw_water_mountains(resized_images)
-    draw_water_trees(resized_images)
-    draw_ground(resized_images)    
-    
-    # initialize 'key' to use for keybinding in game loop
-    key = pygame.key.get_pressed()   
-    
-    # sprite movement controls:
-    if (key[pygame.K_LEFT] and scroll > 0) or (key[pygame.K_a] and scroll > 0):
-        scroll -= 1.5       
-    if (key[pygame.K_RIGHT] and scroll < 5000) or (key[pygame.K_d] and scroll < 5000):
-        scroll += 1.5
+    draw_water_trees(resized_images)    
+    draw_ground(resized_images)
+    # draw sprite
+    draw_sprite(screen_width, screen_height, sprite_position)
+
+    # draw night tint and fade to black: 0, 0 makes it draw from the top left of the screen
+    screen.blit(night_tint, (0, 0))
+    screen.blit(black_tint, (0, 0))
 
     # update display (.flip since implemented double buffering)
     pygame.display.flip()
-    
-# if loop ends, game quits, sys.exit for smooth program termination and cleanup operations   
+
+# draw the game over text outside the main loop
+game_over_render = game_over.render("You're lost, and can't find your way back", True, (255, 255, 255))
+screen.blit(game_over_render, (0, 0))
+pygame.display.flip()
+
+# wait for a few seconds to display the game over text
+pygame.time.delay(5000)
+
+# if the loop ends, the game quits, sys.exit for smooth program termination and cleanup operations   
 pygame.quit()
 sys.exit()
-
-# IDEAS (notes for me): Maybe have a bed at the end, that you can sleep in, when you wake up it's night or day
-        
-# Credits: 
-# Code: Anthony Davey
-# Free assets (background layers, sprites): 
-# https://saurabhkgp.itch.io/the-island-parallax-background-platformer-side-scroller
-# https://opengameart.org/content/backgrounds-for-2d-platformers
-# https://www.cleanpng.com/png-real-sun-png-42776/download-png.html
