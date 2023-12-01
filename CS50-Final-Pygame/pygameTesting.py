@@ -24,17 +24,26 @@ if resolution.current_w < 1920 and resolution.current_h < 1080:
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Sunset Run")
 
-# fullscreen check variable so I can toggle between fs and windowed in game loop
-not_fullscreen = False
+# Boolean fullscreen check variable so I can toggle between fs and windowed in game loop
+fullscreen_toggle = False
 
 # define game variables(scrolling)
 scroll = 0
+
+# load sprite
+sprite = pygame.image.load("Player/1.png").convert_alpha()
+sprite_width = sprite.get_width()
+sprite_height = sprite.get_height()
+
+# draw sprite
+def draw_sprite():
+    screen.blit(sprite, (960, 865))
 
 # load backgrounds starting with ground:
 # note: loading all 1 by 1 instead of list so I have full control over individual .png scrolling speed
 ground_image = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\Island\\Layers\\L5.png").convert_alpha()
 
-# get ground background width and height
+# get ground background width and height(do this for others also)
 ground_width = ground_image.get_width()
 ground_height = ground_image.get_height()
 
@@ -63,34 +72,31 @@ sun = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.
 sun_width = sun.get_width()
 sun_height = sun.get_height()
             
-# draw far mountains
-# range of 101 for these since I'll stop (right) parallax scrolling at 100 range (192,000 pixels)
-def draw_far_mountains():
+# draw images including resized versions of these to implement later for fullscreen toggle
+# range of 101 is arbitrary, just making sure it's enough without being too much
+def draw_far_mountains(images):
     for x in range(101):
-        screen.blit(far_mountains, ((x * far_mountains_width) - scroll * 0.4, 0))
-            
-# draw ground images
-def draw_ground():
-    for x in range(101):
-        screen.blit(ground_image, ((x * ground_width) - scroll * 6, 0))
-        
-# draw the 2 different water images onto screen
-def draw_water_mountains():
-    for x in range (101):
-        screen.blit(water_mountains, ((x * water_mountains_width) - scroll * 1.2, 0))
-        
-def draw_water_trees():
-    for x in range (101):
-        screen.blit(water_trees, ((x * water_trees_width) - scroll * 1.2, 0))
-        
-# draw clouds and sun (edited these to scale/make transparent through gimp)
-def draw_clouds():
-    for x in range (101):
-        screen.blit(clouds, ((x * clouds_width) - scroll * 0.2, 0))
+        screen.blit(images[0], ((x * images[0].get_width()) - scroll * 0.4, 0))
 
-def draw_sun():
-    for x in range (101):
-        screen.blit(sun, ((x * sun_width) - scroll * 0.00001, 0))
+def draw_ground(images):
+    for x in range(101):
+        screen.blit(images[4], ((x * images[4].get_width()) - scroll * 6, 0))
+
+def draw_water_mountains(images):
+    for x in range(101):
+        screen.blit(images[2], ((x * images[2].get_width()) - scroll * 1.2, 0))
+
+def draw_water_trees(images):
+    for x in range(101):
+        screen.blit(images[3], ((x * images[3].get_width()) - scroll * 1.2, 0))
+
+def draw_clouds(images):
+    for x in range(101):
+        screen.blit(images[1], ((x * images[1].get_width()) - scroll * 0.2, 0))
+
+def draw_sun(images):
+    for x in range(101):
+        screen.blit(images[5], ((x * images[5].get_width()) - scroll * 0.00001, 0))
         
 # make list of loaded images to simplify transform.scale
 images_list = [far_mountains, clouds, water_mountains, water_trees, ground_image, sun]
@@ -103,7 +109,9 @@ def resize_images(images, screen_width, screen_height):
         resized_images.append(resized_image)
     return resized_images
 
-# game loop, with forever repeating while loop (when run = true)
+resized_images = resize_images(images_list, screen_width, screen_height)
+
+# GAME LOOP, with forever repeating while loop (when run = true)
 run = True
 while run:
     # cap frame rate
@@ -113,49 +121,24 @@ while run:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
+        
+        # Keybinds: 
+        # make a limit so you can only go left a certain amount (since images only properly scroll right)
+        # 0 for left so can't go left unless already travelled to the right a given amount
+        # 192,000 for right because this pixel count matches the set range for x of 100 (# of layers side-by-side)    
+        # loop with pygame.keydown so keybind will only trigger once when key is pressed
+        elif event.type == pygame.KEYDOWN:
             
-    # enable double-buffering (for smoother rendering), start by clearing screen with white or black bg
-    # note: double buffering didn't end up fixing my image blending issue but keeping it in anyway
-    screen.fill((0, 0, 0))
-    
-    # draw background(far mountains), clouds, water/tree/close mountains layers, and ground in game loop
-    draw_far_mountains()
-    draw_sun()
-    draw_clouds()
-    draw_water_mountains()
-    draw_water_trees()
-    draw_ground()
-    
-    # keybinds: 
-    # make a limit so you can only go left a certain amount (since images only properly scroll right)
-    # 0 for left so can't go left unless already travelled to the right a given amount
-    # 192,000 for right because this pixel count matches the set range for x of 100 (# of layers side-by-side)
-    key = pygame.key.get_pressed()
-    
-    # sprite movement controls:
-    if key[pygame.K_LEFT] and scroll > 0:
-        scroll -= 1.5
-    if key[pygame.K_a] and scroll > 0:
-        scroll -= 1.5       
-    if key[pygame.K_RIGHT] and scroll < 192000: 
-        scroll += 1.5
-    if key[pygame.K_d] and scroll < 192000:
-        scroll += 1.5
-    
-    # system controls:
-    # quit
-    if key[pygame.K_ESCAPE]:
-        pygame.quit()
-    
-    # loop with pygame.keydown so keybind will only trigger once when key is pressed
-    for event in pygame.event.get():
-        if event.type == pygame.KEYDOWN:
+            # system controls:
+            # quit
+            if event.key == pygame.K_ESCAPE:
+                run = False
             
             # pygame.key.get_mods to check the state of modifier keys, i.e. the alt keys
-            if event.key in [pygame.K_f, pygame.K_F11] or (event.key == pygame.K_RETURN and pygame.key.get_mods() & pygame.KMOD_ALT):
+            elif event.key in [pygame.K_F11] or (event.key == pygame.K_RETURN and pygame.key.get_mods() & pygame.KMOD_ALT):
                 
                 # toggle windowed/fullscreen
-                if not_fullscreen:
+                if fullscreen_toggle:
                     screen_width = 1920 * 0.5
                     screen_height = 1080 * 0.5
                         
@@ -167,33 +150,61 @@ while run:
                     screen_width = 1920
                     screen_height = 1080
 
-                # draw background layers again if fullscreen button toggled
+                # draw background layers for if fullscreen button toggled
+                # resized images variable for including images list with screen height and width
                 resized_images = resize_images(images_list, screen_width, screen_height)
-                draw_far_mountains()
-                draw_sun()
-                draw_clouds()
-                draw_water_mountains()
-                draw_water_trees()
-                draw_ground()
+                
+                draw_far_mountains(resized_images)
+                draw_sun(resized_images)
+                draw_clouds(resized_images)
+                draw_water_mountains(resized_images)
+                draw_water_trees(resized_images)
+                draw_ground(resized_images)
+                # draw sprite
+                draw_sprite()
 
                 # set display mode 
                 pygame.display.set_mode((screen_width, screen_height))
-                    
-                not_fullscreen = not not_fullscreen
+                
+                # not makes this False boolean variable True
+                fullscreen_toggle = not fullscreen_toggle 
             
-    # update display
+    # enable double-buffering (for smoother rendering), start by clearing screen with white or black bg
+    # note: double buffering didn't end up being the fix for earlier image blending issue but keeping it in anyway
+    screen.fill((0, 0, 0))
+    
+    # draw background layers (these are the how they're drawn by default, before user toggles fullscreen)
+    draw_far_mountains(resized_images)
+    draw_sun(resized_images)
+    draw_clouds(resized_images)
+    draw_water_mountains(resized_images)
+    draw_water_trees(resized_images)    
+    draw_ground(resized_images)
+    # draw sprite
+    draw_sprite()
+        
+    
+    # initialize 'key' to use for keybinding in game loop
+    key = pygame.key.get_pressed()   
+    
+    # sprite movement controls:
+    if (key[pygame.K_LEFT] and scroll > 0) or (key[pygame.K_a] and scroll > 0):
+        scroll -= 1.5       
+    if (key[pygame.K_RIGHT] and scroll < 5000) or (key[pygame.K_d] and scroll < 5000):
+        scroll += 1.5
+
+    # update display (.flip since implemented double buffering)
     pygame.display.flip()
     
 # if loop ends, game quits, sys.exit for smooth program termination and cleanup operations   
 pygame.quit()
 sys.exit()
 
-    
 # IDEAS (notes for me): Maybe have a bed at the end, that you can sleep in, when you wake up it's night or day
         
 # Credits: 
 # Code: Anthony Davey
-# Free background layers: 
+# Free assets (background layers, sprites): 
 # https://saurabhkgp.itch.io/the-island-parallax-background-platformer-side-scroller
 # https://opengameart.org/content/backgrounds-for-2d-platformers
 # https://www.cleanpng.com/png-real-sun-png-42776/download-png.html
