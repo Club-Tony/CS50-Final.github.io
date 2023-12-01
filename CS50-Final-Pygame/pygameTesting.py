@@ -117,7 +117,7 @@ def draw_clouds(images):
 
 def draw_sun(images):
     for x in range(101):
-        screen.blit(images[5], ((x * images[5].get_width()) - scroll * 0.00001, 0))
+        screen.blit(images[5], ((x * images[5].get_width()) - scroll * 0.0001, 0))
         
 # make list of loaded images to simplify transform.scale
 images_list = [far_mountains, clouds, water_mountains, water_trees, ground_image, sun]
@@ -148,10 +148,7 @@ black_tint = pygame.Surface((screen_width, screen_height))
 
 # game over text
 # create font object None makes it pygame default font, otherwise need to use loaded font, 2nd arg = size
-game_over = pygame.font.Font(None, 150)
-
-# boolean flag for whether screen has fully faded to black
-blacked_out = False
+game_over = pygame.font.Font(None, 115)
 
 # GAME LOOP, with forever repeating while loop (when run = true)
 run = True
@@ -160,7 +157,7 @@ while run:
     clock.tick(FPS)
     
     # increment night cycle
-    nighttime += 11.03 
+    nighttime += 0.03 
     
     # min function takes any # of arguments, returns the smallest of arguments provided
     color_value = min(nighttime, 128)
@@ -181,21 +178,6 @@ while run:
     # update black tint
     black_tint.fill((0, 0, 0))
     black_tint.set_alpha(black_alpha_value)
-    
-    if not blacked_out:
-        # continues blitting and increasing alpha value
-        
-        # if black, have text up that says you're lost, and can't find your way back
-        if black_alpha_value == 255:
-            blacked_out = True
-    else:       
-        # create render arguments: text, boolean for whether or not to antialias, then rgb for color
-        game_over_render = game_over.render("You're lost, and can't find your way back", True, (255, 255, 255))
-        game_over_text_width = game_over_render.get_width()
-        game_over_text_height = game_over_render.get_height()
-        text_center_x = screen_width / 2 - game_over_text_width / 2
-        text_center_y = screen_height / 2 - game_over_text_height / 2
-        screen.blit(game_over_render, (text_center_x, text_center_y))
     
     # event handler for ending loop
     for event in pygame.event.get():
@@ -293,6 +275,15 @@ while run:
     # draw night tint and fade to black: 0, 0 makes it draw from top left of screen
     screen.blit(night_tint, (0, 0))
     screen.blit(black_tint, (0, 0))
+    # if black, have text up that says you're lost, and can't find your way back
+    if fade_black > 0:       
+        # create render arguments: text, boolean for whether or not to antialias, then rgb for color
+        game_over_render = game_over.render("You're lost, and can't find your way back", True, (255, 0, 0))
+        game_over_text_width = game_over_render.get_width()
+        game_over_text_height = game_over_render.get_height()
+        text_center_x = screen_width / 2 - game_over_text_width / 2
+        text_center_y = screen_height / 2 - game_over_text_height / 2
+        screen.blit(game_over_render, (text_center_x, text_center_y))
 
     # update display (.flip since implemented double buffering)
     pygame.display.flip()
