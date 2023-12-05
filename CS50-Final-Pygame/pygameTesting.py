@@ -2,8 +2,9 @@
 import pygame
 import sys
 
-# initialize all pygame modules
+# initialize all pygame modules, and .mixer specifically for better audio control
 pygame.init()
+pygame.mixer.init()
 
 # set clock and fps so game runs at intended speed, set night cycle clock
 clock = pygame.time.Clock()
@@ -18,10 +19,9 @@ resolution = pygame.display.Info()
 screen_width = 1920
 screen_height = 1080
 
-# if user resolution is lower than default, change it
-if resolution.current_w < 1920 and resolution.current_h < 1080:
-    screen_width = resolution.current_w
-    screen_height = resolution.current_h
+# create copies of the screen dimensions for later to use for rescaling when changing window size
+og_screen_width = 1920
+og_screen_height = 1080
 
 # set display, name display
 screen = pygame.display.set_mode((screen_width, screen_height))
@@ -30,13 +30,22 @@ pygame.display.set_caption("Sunset Run")
 # Boolean fullscreen check variable so I can toggle between fs and windowed in game loop
 fullscreen_toggle = False
 
-# define game variables(scrolling)
+# define game variables(scrolling) Note: scroll speed based on fps, so 60 fps is scroll = 1 means scrolling 60 pixels per second
 scroll = 0
+
+# stamina bar, create variable to keep track starting at 100%, have it decrease certain amount each frame-
+# when space bar is being used
+stamina = 1500
+
+# initializing cooldown and boost now so it can be used in game loop later, have boost initially as true to allow player to boost initially
+cooldown = 0
+boost = True
 
 # load sprite
 sprite = pygame.image.load("Player/1.png").convert_alpha()
 sprite_width = sprite.get_width()
 sprite_height = sprite.get_height()
+
 # include another copy of sprite width and height for use later in game loop when adjusting - 
 # window size since sprite_width and sprite_height values get changed
 initial_sprite_width = sprite.get_width()
@@ -57,8 +66,18 @@ def draw_sprite(screen_width, screen_height, sprite_position):
     height_adjust = int(sprite_height * (screen_height / 1080))   
     resized_sprite = pygame.transform.scale(sprite, (width_adjust, height_adjust))
     
-    # use sprite_position to draw sprite
-    screen.blit(resized_sprite, sprite_position)
+    # make flipped version of sprite for facing left. true and false are x and y arguments. True = flip
+    flipped_sprite = pygame.transform.flip(resized_sprite, True, False)
+    
+    if last_key == "left":
+        screen.blit(flipped_sprite, sprite_position)
+        
+    elif last_key == "right":
+        # use sprite_position to draw sprite
+        screen.blit(resized_sprite, sprite_position)
+        
+# define last_key so it can update later in game loop, default right so sprite loads properly at game start
+last_key = "right"
 
 # load backgrounds starting with ground:
 # note: loading all 1 by 1 instead of list so I have full control over individual .png scrolling speed
@@ -78,7 +97,7 @@ water_trees = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final
 water_trees_width = water_trees.get_width()
 water_trees_height = water_trees.get_height()
 
-# load custom L2 (clouds) note: made clouds with GIMP software to adjust transparency so it worked seamlessly
+# load custom L2 (clouds)
 clouds = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\Island\\Layers\\L2.png").convert_alpha()
 clouds_width = clouds.get_width()
 clouds_height = clouds.get_height()
@@ -92,7 +111,24 @@ far_mountains_height = far_mountains.get_height()
 sun = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\Island\\Layers\\L6.png").convert_alpha()
 sun_width = sun.get_width()
 sun_height = sun.get_height()
-            
+
+# load shelter (fire and tent), adjust the width and height here before game loop to avoid drawing/scrolling issues
+shelter = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\fire.png").convert_alpha()
+shelter_width = shelter.get_width() * 2.2
+shelter_height = shelter.get_height() * 2.8
+
+tent = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\tent.png").convert_alpha()
+tent_width = tent.get_width()
+tent_height = tent.get_height() * 1.7
+
+# load and (later) play music, -1 arg for indefinite loop, make it muted/off by default
+# also create a boolean variable for volume muting and for first toggle to make it so music not playing at first
+music = pygame.mixer.music.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\Music\\Moon boots i want your attention loop.mp3")
+pygame.mixer.music.set_volume(0.75)
+                                          
+volume_toggle = False
+first_volume_toggle = False
+ 
 # draw images including resized versions of these to implement later for fullscreen toggle
 # range of 101 is arbitrary, just making sure it's enough without being too much
 def draw_far_mountains(images):
@@ -140,76 +176,88 @@ night_tint = pygame.Surface((screen_width, screen_height))
 night_tint.fill((0, 0, 128))
 
 # alpha value of tint to set transparency, create variable to use in if statement in game loop
-# max_opacity = 218 so so it matches max alpha_value
-max_opacity = 218
+# max_opacity = 185 so so it matches max alpha_value
+max_opacity = 185
 
 # fade to black
 black_tint = pygame.Surface((screen_width, screen_height))
 
+# TEXT
 # game over text
 # create font object None makes it pygame default font, otherwise need to use loaded font, 2nd arg = size
 game_over = pygame.font.Font(None, 115)
 
-# GAME LOOP, with forever repeating while loop (when run = true)
+# you win text
+congrats = pygame.font.Font(None, 115)
+
+# buttons, define button dimensions and position, create Rect (rectangle), then draw in game loop
+button_width = 130
+button_height = 55
+button_x = (screen_width - button_width) // 2
+button_y = (screen_height - button_height) * 0.7
+
+button_rect = pygame.Rect(button_x, button_y, button_width, button_height)
+
+# button text font and size
+exit_button = pygame.font.Font(None, 85)
+
+# game start text
+controls = pygame.font.Font(None, 80)
+controls_2 = pygame.font.Font(None, 80)
+controls_3 = pygame.font.Font(None, 80)
+start_text = pygame.font.Font(None, 148)
+start_text_2 = pygame.font.Font(None, 148)
+stamina_instruction = pygame.font.Font(None, 55)
+
+# GAME LOOP, with forever repeating while loop (while run = true)
+# note: basically anything not depending on an event can be placed in main game loop not in event handler loop
 run = True
 while run:
+            
     # cap frame rate
     clock.tick(FPS)
-    
+
     # increment night cycle
     nighttime += 0.03 
-    
+
     # min function takes any # of arguments, returns the smallest of arguments provided
     color_value = min(nighttime, 128)
-    alpha_value = min(nighttime, 218)
-    
+    alpha_value = min(nighttime, 185)
+
     # update night tint with color and alpha value on each iteration
     night_tint.fill((0, 0, color_value))
     night_tint.set_alpha(alpha_value)
     
-    # increment fade to black when night is at its darkest
-    if alpha_value >= max_opacity:
-        # if statement so fade_black doesn't exceed 255
-        if fade_black < 255:
-            fade_black += 1
-        
+    # initialize 'key' variable to use for keybinding in game loop, allows for holding down keys, unlike KEYDOWN
+    # initialize in the main game loop, outside any event handling loops
+    key = pygame.key.get_pressed()
+    
     black_alpha_value = min(fade_black, 255) # 255 for full opacity
         
     # update black tint
     black_tint.fill((0, 0, 0))
     black_tint.set_alpha(black_alpha_value)
     
-    # event handler for ending loop
+    # event handler loop (have all events during game under this for loop) i.e. if statements, other loops
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
-        
-        # Keybinds: 
-        # make a limit so you can only go left a certain amount (since images only properly scroll right)
-        # 0 for left so can't go left unless already travelled to the right a given amount
-        # 192,000 for right because this pixel count matches the set range for x of 100 (# of layers side-by-side)    
+            
+        # Keybinds:
+        # volume toggle and escape keybinds (consolodating the pygame.keygame calls together to prevent conflicts)
         # loop with pygame.keydown so keybind will only trigger once when key is pressed
-        elif event.type == pygame.KEYDOWN:
-            
-            # system controls:
-            # quit
-            if event.key == pygame.K_ESCAPE:
-                run = False
-            
-            # pygame.key.get_mods to check the state of modifier keys, i.e. the alt keys
-            elif event.key in [pygame.K_F11] or (event.key == pygame.K_RETURN and pygame.key.get_mods() & pygame.KMOD_ALT):
+        # this starts song infinite loop on first m keypress, then from that point m will only toggle mute/unmute    
+        if event.type == pygame.KEYDOWN:
+            # pygame.key.get_mods to check the state of modifier keys, i.e. the alt keys 
+            if event.key in [pygame.K_F11] or (event.key == pygame.K_RETURN and pygame.key.get_mods() & pygame.KMOD_ALT):
                 
                 # not makes this False boolean variable True
                 fullscreen_toggle = not fullscreen_toggle 
                 
-                # toggle windowed/fullscreen
-                if fullscreen_toggle:
+                # toggle windowed/fullscreen, start by checking if user has < 1920 x 1080 resolution
+                if fullscreen_toggle or (resolution.current_w < 1920 and resolution.current_h < 1080):
                     screen_width = 1920 * 0.5
                     screen_height = 1080 * 0.5
-                        
-                elif resolution.current_w < 1920 and resolution.current_h < 1080:
-                    screen_width = resolution.current_w
-                    screen_height = resolution.current_h
                         
                 else:
                     screen_width = 1920
@@ -237,7 +285,7 @@ while run:
                     
                 # set display mode after determining screen width/height changes, but before drawing
                 pygame.display.set_mode((screen_width, screen_height))          
-                         
+                            
                 draw_far_mountains(resized_images)
                 draw_sun(resized_images)
                 draw_clouds(resized_images)
@@ -246,9 +294,40 @@ while run:
                 draw_ground(resized_images)
                 # draw sprite
                 draw_sprite(screen_width, screen_height, sprite_position)
+                
+            # volume button        
+            if event.key == pygame.K_m:
+                if first_volume_toggle == False:
+                    # start music after first volume toggle
+                    pygame.mixer.music.play(-1)
+                    
+                    # 'not' makes these False boolean variables True
+                    first_volume_toggle = not first_volume_toggle
+                
+                volume_toggle = not volume_toggle
+                
+                # volume control
+                if volume_toggle and first_volume_toggle == True:
+                    pygame.mixer.music.set_volume(0.75)
+                else: 
+                    pygame.mixer.music.set_volume(0)
+                    
+            # system controls: quit
+            elif event.key == pygame.K_ESCAPE:
+                run = False
+               
+    # increment fade to black when night is at its darkest
+    if alpha_value >= max_opacity:
+        # if statement so fade_black doesn't exceed 255
+        if fade_black < 255:
+            fade_black += 1
+            
+    # handle mouse click for exit button
+    if event.type == pygame.MOUSEBUTTONDOWN:
+        if button_rect.collidepoint(event.pos):
+            run = False   
             
     # enable double-buffering (for smoother rendering), start by clearing screen with white or black bg
-    # note: double buffering didn't end up being the fix for earlier image blending issue but keeping it in anyway
     screen.fill((0, 0, 0))
     
     # draw background layers (these are the how they're drawn by default, before user toggles fullscreen)
@@ -260,30 +339,313 @@ while run:
     draw_ground(resized_images)
     # draw sprite
     draw_sprite(screen_width, screen_height, sprite_position)
-        
-    
-    # initialize 'key' to use for keybinding in game loop
-    key = pygame.key.get_pressed()   
-    
+           
     # sprite movement controls:
+    # make a limit so you can only go left a certain amount (since images only properly scroll right)
+    # for right, choose pixel count suitable for how long I want sprite to be able to run right 
+    # make variable here to keep track of last key pressed between left/right to flip sprite accordingly  
     if (key[pygame.K_LEFT] and scroll > 0) or (key[pygame.K_a] and scroll > 0):
-        scroll -= 1.5       
-    if (key[pygame.K_RIGHT] and scroll < 5000) or (key[pygame.K_d] and scroll < 5000):
+        scroll -= 1.5
+        last_key = "left"  
+             
+    if (key[pygame.K_RIGHT] and scroll < 15000) or (key[pygame.K_d] and scroll < 15000):
         scroll += 1.5
+        last_key = "right"
         
+    speed_boost_left = ((key[pygame.K_SPACE] and key[pygame.K_LEFT]) and scroll > 0) or (key[pygame.K_SPACE] and key[pygame.K_a]) and scroll > 0
+    if speed_boost_left and boost:
+        scroll -= 3
+        
+    speed_boost_right = ((key[pygame.K_SPACE] and key[pygame.K_RIGHT]) and scroll < 15000) or (key[pygame.K_SPACE] and key[pygame.K_d]) and scroll < 15000    
+    if speed_boost_right and boost:
+        scroll += 3
+        
+    # implement stamina bar
+    # set stamina bar width, then set its current width divided by value of stamina
+    stamina_bar = 250
+    stamina_bar_current = (stamina / 1500) * stamina_bar
     
+    stamina_bar_border = 3
+    
+    # draw stamina bar and border, border first since it needs to be drawn before since it's opaque
+    draw_stamina_bar_border = pygame.draw.rect(screen, (255, 100, 255), (150 - stamina_bar_border, 1000 - stamina_bar_border, stamina_bar + 2 * stamina_bar_border, 10 + 2 * stamina_bar_border))
+    draw_stamina = pygame.draw.rect(screen, (0, 255, 0), (150, 1000, stamina_bar_current, 10))
+    
+    if screen_width < 1920 and screen_height < 1080:
+            
+            # rescale variable for original and current screen size to use for rescaling
+            rescaler = screen_width / og_screen_width
+            
+            rescaled_stamina_bar_x = int(150 * rescaler)
+            rescaled_stamina_bar_y = int(1000 * rescaler)
+            rescaled_stamina_bar_width = int(stamina_bar_current * rescaler)
+            rescaled_stamina_bar_height = int(10 * rescaler)
+            
+            rescaled_stamina_bar_border = int(3 * rescaler)
+            
+            rescaled_stamina_bar_border_x = int((150 - stamina_bar_border) * rescaler)
+            rescaled_stamina_bar_border_y = int((1001 - stamina_bar_border) * rescaler)
+            rescaled_stamina_bar_border_width = int((stamina_bar + 2 * stamina_bar_border) * rescaler)
+            rescaled_stamina_bar_border_height = int((10 + 2 * stamina_bar_border) * rescaler)
+            
+            pygame.draw.rect(screen, (255, 0, 255), (rescaled_stamina_bar_border_x + 1, rescaled_stamina_bar_border_y, rescaled_stamina_bar_border_width, rescaled_stamina_bar_border_height))
+            pygame.draw.rect(screen, (0, 255, 0), (rescaled_stamina_bar_x, rescaled_stamina_bar_y, rescaled_stamina_bar_width, rescaled_stamina_bar_height))
+            
+    else:
+        draw_stamina_bar_border = pygame.draw.rect(screen, (255, 0, 255), (150 - stamina_bar_border, 1000 - stamina_bar_border, stamina_bar + 2 * stamina_bar_border, 10 + 2 * stamina_bar_border))
+        draw_stamina = pygame.draw.rect(screen, (0, 255, 0), (150, 1000, stamina_bar_current, 10))
+    
+    # keep track of time (for seconds instead of ms divide by 1000)
+    time = pygame.time.get_ticks() // 1000
+    
+    # cooldown for set amount of time can't boost (use spacebar), set max for stamina so it can't be < 0   
+    if (speed_boost_left or speed_boost_right) and stamina > 4:
+        stamina -= 4
+        stamina = max(0, stamina)
+        if stamina <= 4 and boost: 
+            cooldown = time
+            boost = False
+        elif stamina <= 4 and boost and time > cooldown + 10:
+            cooldown = time
+            boost = False
+    
+    # "and not boost and time >= 1" below to prevent countdown happening on game launch
+    if time <= cooldown + 10 and not boost and time >= 1:
+        # display countdown time, and set boost to False in order to activate cooldown
+        countdown_timer = int(10 - (time - cooldown))
+        countdown_overlay_font = pygame.font.Font(None, 35)
+        countdown_overlay = countdown_overlay_font.render(str(countdown_timer), True, (255, 255, 255))
+        
+        boost = False
+        
+        # draw countdown overlay, rescale if window size changes
+        
+        if screen_width < 1920 and screen_height < 1080:
+            
+            # rescale variable for original and current screen size to use for rescaling
+            rescaler = screen_width / og_screen_width
+            
+            rescaled_countdown_overlay_font = pygame.font.Font(None, int(35 * rescaler))
+            rescaled_countdown_overlay = rescaled_countdown_overlay_font.render(str(countdown_timer), True, (255, 255, 255))
+            screen.blit(rescaled_countdown_overlay, (420 * rescaler, 993 * rescaler + 1))
+            
+        else:
+            screen.blit(countdown_overlay, (420, 993))
+            
+    if (time > cooldown + 10) and stamina > 4:
+        boost = True  
+                     
+    if not (speed_boost_left or speed_boost_right) and stamina < 1500:
+        stamina += 2                   
+    
+    # if scroll reached endgame scroll distance, create a message
+    # first draw end game items a little before reaching final distance (125 pixels apart is good)
+    if 14875 <= scroll <= 15875:
+        # draw camp objects, - scroll * 6 for the width so it appears static, matching ground scroll speed
+        # make adjustment variables to set x and y locations for images
+        # add the above number after the if statement multiplied by 6 to get the correct x/y always for shelter images
+        shelter_x = screen_width - shelter_width - scroll * 6 + 89200
+        shelter_y = screen_height - shelter_height
+        tent_x = screen_width - tent_width - scroll * 6 + 89200
+        tent_y = screen_height - tent_height
+        
+        if screen_width < 1920 and screen_height < 1080:
+            
+            # rescale variable for original and current screen size to use for rescaling
+            rescaler = screen_width / og_screen_width
+            
+            shelter_x = ((screen_width) - (shelter_width) - (scroll * 6 + 89200) + 178860)
+            shelter_y = (screen_height - shelter_height) * 1.2
+            tent_x = ((screen_width) - (tent_width) - (scroll * 6 + 89200) + 178860) 
+            tent_y = (screen_height - tent_height) * 1.22
+            
+            if 0 <= shelter_x <= screen_width:
+                screen.blit(shelter, (shelter_x, shelter_y))
+            if 0 <= tent_x <= screen_width:
+                screen.blit(tent, (tent_x, tent_y))
+                
+        else:
+            shelter_x = screen_width - shelter_width - scroll * 6 + 89200
+            shelter_y = screen_height - shelter_height
+            tent_x = screen_width - tent_width - scroll * 6 + 89200
+            tent_y = screen_height - tent_height
+            
+            if 0 <= shelter_x <= screen_width:
+                screen.blit(shelter, (shelter_x, shelter_y))
+            if 0 <= tent_x <= screen_width:
+                screen.blit(tent, (tent_x, tent_y))
+    
+    # if statement for congrats screen, have this number 125 pixels higher than shelter/tent draw location for match        
+    if scroll >= 15000:
+        # make fade black increment 0 so no fade to black occurs, also make nighttime stop increment for good measure
+        fade_black = 0
+        nighttime = 0
+        
+        congrats_render = congrats.render("You've made it to shelter safely before nightfall!", True, (0, 255, 0))
+        congrats_text_width = congrats_render.get_width()
+        congrats_text_height = congrats_render.get_height()
+        congrats_text_center_x = screen_width / 2 - congrats_text_width / 2
+        congrats_text_center_y = screen_height / 2 - congrats_text_height / 2
+        
+        # button scale with fullscreen toggle, get original button/text size, multiple by rescale variable
+        if screen_width < 1920 and screen_height < 1080:
+            
+            # rescale variable for original and current screen size to use for rescaling
+            rescaler = screen_width / og_screen_width
+            
+            # rescale button dimensions and position and button_rect
+            button_width = 130 * rescaler
+            button_height = 55 * rescaler
+            button_x = (screen_width - button_width) // 2 
+            button_y = (screen_height - button_height) * 0.7
+            button_rect = pygame.Rect(button_x, button_y, int(button_width), int(button_height))
+            
+            # rescale button and text, use int to prevent type error since it's expecting int not float
+            exit_button = pygame.font.Font(None, int(85 * rescaler))
+            congrats = pygame.font.Font(None, int(115 * rescaler))  
+            
+        # revert button and text scaling to default when screen is 1920 x 1080 (the default)
+        # do this by setting above variable to their default values
+        else:
+            button_width = 130
+            button_height = 55
+            button_x = (screen_width - button_width) // 2
+            button_y = (screen_height - button_height) * 0.7
+            button_rect = pygame.Rect(button_x, button_y, int(button_width), int(button_height))
+            exit_button = pygame.font.Font(None, 85)
+            congrats = pygame.font.Font(None, 115)
+        
+        # draw you win text and exit button/text
+        screen.blit(congrats_render, (congrats_text_center_x, congrats_text_center_y))
+        exit_button_render = exit_button.render("Quit", True, (0, 0, 0))
+        
+        # change button appearance when mouse hovers over
+        if button_rect.collidepoint(pygame.mouse.get_pos()):
+            pygame.draw.rect(screen, (255, 255, 255), button_rect)
+        else:
+            pygame.draw.rect(screen, (255, 0, 0), button_rect)
+            
+        # draw exit button render
+        screen.blit(exit_button_render, (button_x, button_y))
+        
     # draw night tint and fade to black: 0, 0 makes it draw from top left of screen
     screen.blit(night_tint, (0, 0))
     screen.blit(black_tint, (0, 0))
+    
     # if black, have text up that says you're lost, and can't find your way back
-    if fade_black > 0:       
+    if fade_black > 0: 
+      
         # create render arguments: text, boolean for whether or not to antialias, then rgb for color
         game_over_render = game_over.render("You're lost, and can't find your way back", True, (255, 0, 0))
         game_over_text_width = game_over_render.get_width()
         game_over_text_height = game_over_render.get_height()
         text_center_x = screen_width / 2 - game_over_text_width / 2
         text_center_y = screen_height / 2 - game_over_text_height / 2
+        
+        # button scale with fullscreen toggle, get original button/text size, multiple by rescale variable
+        if screen_width < 1920 and screen_height < 1080:
+            
+            # rescale variable for original and current screen size to use for rescaling
+            rescaler = screen_width / og_screen_width
+            
+            # rescale button dimensions and position and button_rect
+            button_width = 130 * rescaler
+            button_height = 55 * rescaler
+            button_x = (screen_width - button_width) // 2 
+            button_y = (screen_height - button_height) * 0.7
+            button_rect = pygame.Rect(button_x, button_y, int(button_width), int(button_height))
+            
+            # rescale button and text, use int to prevent type error since it's expecting int not float
+            exit_button = pygame.font.Font(None, int(85 * rescaler))
+            game_over = pygame.font.Font(None, int(115 * rescaler))  
+            
+        # revert button and text scaling to default when screen is 1920 x 1080 (the default)
+        # do this by setting above variable to their default values
+        else:
+            button_width = 130
+            button_height = 55
+            button_x = (screen_width - button_width) // 2
+            button_y = (screen_height - button_height) * 0.7
+            button_rect = pygame.Rect(button_x, button_y, int(button_width), int(button_height))
+            exit_button = pygame.font.Font(None, 85)
+            game_over = pygame.font.Font(None, 115)
+            
+        # create render arguments for button text
+        exit_button_render = exit_button.render("Quit", True, (0, 0, 0))
+        
+        # draw game over text
         screen.blit(game_over_render, (text_center_x, text_center_y))
+        
+        # draw button rectangle
+        pygame.draw.rect(screen, (255, 0, 0), button_rect)
+        
+        # change button appearance when mouse hovers over            
+        if button_rect.collidepoint(pygame.mouse.get_pos()):
+            pygame.draw.rect(screen, (255, 255, 255), button_rect)
+        else:
+            pygame.draw.rect(screen, (255, 0, 0), button_rect) 
+            
+        # draw exit button text
+        screen.blit(exit_button_render, (button_x, button_y))
+        
+    # render/draw start text, do this last so it's drawn after everything else
+    # keep track of time (for seconds instead of ms divide by 1000)
+    time = pygame.time.get_ticks() // 1000
+    if time < 60:
+        controls_render = controls.render("Controls:     WASD - L/R movement             SPACE - Boost", True, (0, 0, 205))
+        controls_render_2 = controls_2.render("                       M - Music on/off                         ESC - Exit", True, (0, 0, 205))
+        controls_render_3 = controls_3.render("F11 - Window size/scroll speed (only visually, equal total distance)", True, (0, 0, 205))
+        start_text_render = start_text.render("Find shelter soon, you can stop to take", True, (255, 255, 0))
+        start_text_render_2 = start_text_2.render("in the sights but best to keep moving!", True, (255, 255, 0))
+        stamina_instruction_render = stamina_instruction.render("<- Stamina", True, (255, 255, 255))
+        
+        # remove instructions if scrolling, and/or if game starts fading to black
+        if scroll != 0:
+            pass
+        elif alpha_value >= max_opacity:
+            black_alpha_value = min(fade_black, 255)
+            black_tint.fill((0, 0, 0))
+            black_tint.set_alpha(black_alpha_value)
+            if fade_black < 255:
+                
+                if black_alpha_value != 0:
+                    fade_black += 1
+                    screen.blit(black_tint, (0, 0))
+                    
+        # include rescaling if toggled     
+        elif screen_width < 1920 and screen_height < 1080:
+    
+            # rescale variable for original and current screen size to use for rescaling
+            rescaler = screen_width / og_screen_width
+            
+            rescaled_controls = pygame.font.Font(None, int(80 * rescaler))
+            rescaled_controls_2 = pygame.font.Font(None, int(80 * rescaler))
+            rescaled_controls_3 = pygame.font.Font(None, int(80 * rescaler))
+            rescaled_start_text = pygame.font.Font(None, int(148 * rescaler))
+            rescaled_start_text_2 = pygame.font.Font(None, int(148 * rescaler))
+            rescaled_stamina_instruction = pygame.font.Font(None, int(55 * rescaler))
+            
+            controls_render = rescaled_controls.render("Controls:     WASD - L/R movement             SPACE - Boost", True, (0, 0, 205))
+            controls_render_2 = rescaled_controls_2.render("                       M - Music on/off                         ESC - Exit", True, (0, 0, 205))
+            controls_render_3 = rescaled_controls_3.render("F11 - Window size/scroll speed (only visually, equal total distance)", True, (0, 0, 205))
+            start_text_render = rescaled_start_text.render("Find shelter soon, you can stop to take", True, (255, 255, 0))
+            start_text_render_2 = rescaled_start_text_2.render("in the sights but best to keep moving!", True, (255, 255, 0))
+            stamina_instruction_render = rescaled_stamina_instruction.render("<- Stamina", True, (255, 255, 255))
+            
+            screen.blit(controls_render, (0, 10 * rescaler))
+            screen.blit(controls_render_2, (0, 85 * rescaler))
+            screen.blit(controls_render_3, (55 * rescaler, 155 * rescaler))
+            screen.blit(start_text_render, (0, 400 * rescaler)) 
+            screen.blit(start_text_render_2, (20 * rescaler, 500 * rescaler))   
+            screen.blit(stamina_instruction_render, (412 * rescaler, 984 * rescaler))
+                
+        else:        
+            screen.blit(controls_render, (0, 10))
+            screen.blit(controls_render_2, (0, 85))
+            screen.blit(controls_render_3, (55, 155))
+            screen.blit(start_text_render, (0, 400)) 
+            screen.blit(start_text_render_2, (20, 500))   
+            screen.blit(stamina_instruction_render, (412, 984))
 
     # update display (.flip since implemented double buffering)
     pygame.display.flip()
@@ -291,12 +653,18 @@ while run:
 # if loop ends, game quits, sys.exit for smooth program termination and cleanup operations   
 pygame.quit()
 sys.exit()
+ 
+ 
+# final todos: check for redundancies with drawing things
 
-# IDEAS (notes for me): Maybe have a bed at the end, that you can sleep in, when you wake up it's night or day
-        
+ 
 # Credits: 
 # Code: Anthony Davey
-# Free assets (background layers, sprites): 
-# https://saurabhkgp.itch.io/the-island-parallax-background-platformer-side-scroller
-# https://opengameart.org/content/backgrounds-for-2d-platformers
-# https://www.cleanpng.com/png-real-sun-png-42776/download-png.html
+# Free assets: 
+# background layers - https://saurabhkgp.itch.io/the-island-parallax-background-platformer-side-scroller
+# bg layer: clouds (edited for bg transparency) - 
+# bg layer: sun (edited for bg transparency) - https://www.cleanpng.com/png-real-sun-png-42776/download-png.html
+# player sprite - https://www.spriters-resource.com/mobile/senransamuraikingdom/sheet/117279/
+# tent - https://www.spriters-resource.com/pc_computer/heroes3/sheet/45028/
+# bonfire - https://www.spriters-resource.com/pc_computer/strangetelephone/sheet/151419/
+# music (edited for conciseness/looping) - https://anjunadeep.com/us/products/87179-i-want-your-attention
