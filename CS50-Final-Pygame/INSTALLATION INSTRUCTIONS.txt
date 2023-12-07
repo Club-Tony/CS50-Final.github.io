@@ -1,0 +1,25 @@
+INSTALLATION INSTRUCTIONS:
+
+For playing the .exe:
+Download the "Sunset Run" folder from google drive. 
+Extract wherever. 
+More than likely, the SunsetRun.exe file will need
+to be downloaded separately, as it will be flagged as malware because I'm an unrecognized publisher. 
+Download SunsetRun.exe
+Move SunsetRun.exe into your recently extracted Sunset Run folder on your computer.
+Run SunsetRun.exe, click run anyways as it will be flagged as suspicious
+
+
+For playing through your local IDE:
+Download the contents of the "Sunset Run" folder except for the .exe as it's not needed
+Access your directory to the folder through your IDE
+Then download pygame if you don't have it already by typing into your IDE terminal:
+pip install pygame
+Run SunsetRun.py
+
+It's possible that pygame window could fail to open on cloud codespaces, use local if you can.
+
+Note: Make sure your computer's scale and layout settings are at 100% or lower. 
+If higher, game window may be oversized for users with 1920 x 1080 resolution monitors.
+If it is, this can be fixed by going to your computer's settings: 
+(On Windows): Settings - Display - Scale and layout: 100%
