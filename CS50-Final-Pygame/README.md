@@ -1,7 +1,6 @@
 # Sunset Run
 ### Video Demo:  <URL HERE>
 ### Description:
-
 ### Sidescroller game named Sunset Run, made through python with the pygame library, a library for writing video games. This was made through my local vscode on my pc, then transferred to cs50's codespace to turn it in with submit50. 
 ---
 ### Instructions for cs50 staff:
@@ -10,7 +9,9 @@
 
 ### To open in local environment (cs50 and cloud codespaces may not work), download everything from above link and make sure pygame is installed in codespace (pip install pygame)
 
-### To open the .exe, download the .exe from the above link, and ignore the suspicious file flag (I'm an unrecognized publisher so it automatically flags as suspicious)
+### To open the .exe, download the .exe from the Google Drive link in the above link. Google drive because the file size is larger than 25mb so github won't hold it. Ignore the suspicious file flag (I'm an unrecognized publisher so it automatically flags as suspicious).
+
+### Also make sure your computer's scale and layout settings are at 100% or lower. If higher, game window may be oversized for users with 1920 x 1080 resolution monitors. On windows: Settings - Display - Scale and layout: 100%
 ---
 ### Changes I had to make when importing this project into cs50's codespace:
 #### Music: Unfortunately I had to make it so game ran without the option for music because cs50 doesn't support audio, at least not pygame's audio device. 

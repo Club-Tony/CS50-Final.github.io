@@ -140,50 +140,54 @@ def draw_sprite(screen_width, screen_height, sprite_position):
 
 # load backgrounds starting with ground:
 # note: loading all 1 by 1 instead of list so I have full control over individual .png scrolling speed
-ground_image = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\Island\\Layers\\L5.png").convert_alpha()
+ground_image = pygame.image.load("Island\Layers\L5.png").convert_alpha()
 
 # get ground background width and height(do this for others also)
 ground_width = ground_image.get_width()
 ground_height = ground_image.get_height()
 
 # load water with mountains
-water_mountains = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\Island\\Layers\\L3.png").convert_alpha()
+water_mountains = pygame.image.load("Island\Layers\L3.png").convert_alpha()
 water_mountains_width = water_mountains.get_width()
 water_mountains_height = water_mountains.get_height()
 
 # load water with trees
-water_trees = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\Island\\Layers\\L4.png").convert_alpha()
+water_trees = pygame.image.load("Island\Layers\L4.png").convert_alpha()
 water_trees_width = water_trees.get_width()
 water_trees_height = water_trees.get_height()
 
 # load custom L2 (clouds)
-clouds = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\Island\\Layers\\L2.png").convert_alpha()
+clouds = pygame.image.load("Island\Layers\L2.png").convert_alpha()
 clouds_width = clouds.get_width()
 clouds_height = clouds.get_height()
 
 # load mountains background (L1.png)
-far_mountains = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\Island\\Layers\\L1.png").convert_alpha()
+far_mountains = pygame.image.load("Island\Layers\L1.png").convert_alpha()
 far_mountains_width = far_mountains.get_width()
 far_mountains_height = far_mountains.get_height()
 
 # load sun 
-sun = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\Island\\Layers\\L6.png").convert_alpha()
+sun = pygame.image.load("Island\Layers\L6.png").convert_alpha()
 sun_width = sun.get_width()
 sun_height = sun.get_height()
 
 # load shelter (fire and tent), adjust the width and height here before game loop to avoid drawing/scrolling issues
-shelter = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\fire.png").convert_alpha()
+shelter = pygame.image.load("fire.png").convert_alpha()
 shelter_width = shelter.get_width() * 1.2
 shelter_height = shelter.get_height() * 1.8
 
-tent = pygame.image.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\tent.png").convert_alpha()
+tent = pygame.image.load("tent.png").convert_alpha()
 tent_width = tent.get_width() * 0.3
 tent_height = tent.get_height() * 1.3
 
 # load and (later) play music, -1 arg for indefinite loop, make it muted/off by default
 # also create a boolean variable for volume muting and for first toggle to make it so music not playing at first
-music = pygame.mixer.music.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\Music\\Moon boots i want your attention loop.mp3")
-pygame.mixer.music.set_volume(0.75)
+# another try except block incase audio device not found
+try:
+    music = pygame.mixer.music.load("Music\Moon boots i want your attention loop.mp3")
+    pygame.mixer.music.set_volume(0.75)
+except pygame.error:
+    pass
                                           
 volume_toggle = False
 first_volume_toggle = False
@@ -245,10 +249,10 @@ black_tint = pygame.Surface((screen_width, screen_height))
 # TEXT
 # game over text
 # create font object None makes it pygame default font, otherwise need to use loaded font, 2nd arg = size
-game_over = pygame.font.Font("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\Branda-yolq.ttf", 100)
+game_over = pygame.font.Font("Branda-yolq.ttf", 100)
 
 # you win text
-congrats = pygame.font.Font("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\ChrustyRock-ORLA.ttf", 93)
+congrats = pygame.font.Font("ChrustyRock-ORLA.ttf", 93)
 
 # buttons, define button dimensions and position, create Rect (rectangle), then draw in game loop
 button_width = 130
@@ -265,8 +269,8 @@ exit_button = pygame.font.Font(None, 85)
 controls = pygame.font.Font(None, 75)
 controls_2 = pygame.font.Font(None, 75)
 controls_3 = pygame.font.Font(None, 75)
-start_text = pygame.font.Font("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\ChrustyRock-ORLA.ttf", 115)
-start_text_2 = pygame.font.Font("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\ChrustyRock-ORLA.ttf", 115)
+start_text = pygame.font.Font("ChrustyRock-ORLA.ttf", 115)
+start_text_2 = pygame.font.Font("ChrustyRock-ORLA.ttf", 115)
 stamina_instruction = pygame.font.Font(None, 55)
 
 # GAME LOOP, with forever repeating while loop (while run = true)
@@ -583,7 +587,7 @@ while run:
             
             # rescale button and text, use int to prevent type error since it's expecting int not float
             exit_button = pygame.font.Font(None, int(85 * rescaler))
-            congrats = pygame.font.Font("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\ChrustyRock-ORLA.ttf", int(93 * rescaler))  
+            congrats = pygame.font.Font("ChrustyRock-ORLA.ttf", int(93 * rescaler))  
             
         # revert button and text scaling to default when screen is 1920 x 1080 (the default)
         # do this by setting above variable to their default values
@@ -594,7 +598,7 @@ while run:
             button_y = (screen_height - button_height) * 0.7
             button_rect = pygame.Rect(button_x, button_y, int(button_width), int(button_height))
             exit_button = pygame.font.Font(None, 85)
-            congrats = pygame.font.Font("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\ChrustyRock-ORLA.ttf", 93)
+            congrats = pygame.font.Font("ChrustyRock-ORLA.ttf", 93)
         
         # draw you win text and exit button/text
         screen.blit(congrats_render, (congrats_text_center_x, congrats_text_center_y))
@@ -638,7 +642,7 @@ while run:
             
             # rescale button and text, use int to prevent type error since it's expecting int not float
             exit_button = pygame.font.Font(None, int(85 * rescaler))
-            game_over = pygame.font.Font("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\Branda-yolq.ttf", int(100 * rescaler)) 
+            game_over = pygame.font.Font("Branda-yolq.ttf", int(100 * rescaler)) 
             
         # revert button and text scaling to default when screen is 1920 x 1080 (the default)
         # do this by setting above variable to their default values
@@ -649,7 +653,7 @@ while run:
             button_y = (screen_height - button_height) * 0.7
             button_rect = pygame.Rect(button_x, button_y, int(button_width), int(button_height))
             exit_button = pygame.font.Font(None, 85)
-            game_over = pygame.font.Font("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\Branda-yolq.ttf", 100)
+            game_over = pygame.font.Font("Branda-yolq.ttf", 100)
             
         # create render arguments for button text
         exit_button_render = exit_button.render("Quit", True, (0, 0, 0))
@@ -702,8 +706,8 @@ while run:
             rescaled_controls = pygame.font.Font(None, int(75 * rescaler))
             rescaled_controls_2 = pygame.font.Font(None, int(75 * rescaler))
             rescaled_controls_3 = pygame.font.Font(None, int(75 * rescaler))
-            rescaled_start_text = pygame.font.Font(("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\ChrustyRock-ORLA.ttf"), int(115 * rescaler))
-            rescaled_start_text_2 = pygame.font.Font(("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\ChrustyRock-ORLA.ttf"), int(115 * rescaler))
+            rescaled_start_text = pygame.font.Font(("ChrustyRock-ORLA.ttf"), int(115 * rescaler))
+            rescaled_start_text_2 = pygame.font.Font(("ChrustyRock-ORLA.ttf"), int(115 * rescaler))
             rescaled_stamina_instruction = pygame.font.Font(None, int(55 * rescaler))
             
             controls_render = rescaled_controls.render(" Controls:          WASD - L/R movement             SPACE - Boost", True, (0, 0, 205))
@@ -735,7 +739,7 @@ while run:
 pygame.quit()
 sys.exit()
 
- 
+
 # Credits: 
 # Code: Anthony Davey
 # Free assets: 
