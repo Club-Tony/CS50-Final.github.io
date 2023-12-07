@@ -3,7 +3,20 @@
 ### Description:
 
 ### Sidescroller game named Sunset Run, made through python with the pygame library, a library for writing video games. This was made through my local vscode on my pc, then transferred to cs50's codespace to turn it in with submit50. 
+---
+### Instructions for cs50 staff:
+### IMPORTANT NOTE: Pygame window does not open in cs50's codespace environment (at least for me). The game works fine if opened as an executable or if ran on a local codespace.
+### Github link to SunsetRun.py and SunsetRun.exe: https://github.com/Club-Tony/CS50-Final.github.io/tree/main/CS50-Final-Pygame
 
+### To open in local environment (cs50 and cloud codespaces may not work), download everything from above link and make sure pygame is installed in codespace (pip install pygame)
+
+### To open the .exe, download the .exe from the above link, and ignore the suspicious file flag (I'm an unrecognized publisher so it automatically flags as suspicious)
+---
+### Changes I had to make when importing this project into cs50's codespace:
+#### Music: Unfortunately I had to make it so game ran without the option for music because cs50 doesn't support audio, at least not pygame's audio device. 
+
+#### Directory for loading .pngs (images) and .ttfs (fonts): Had to manually change all my original absolute file paths for loading files into relative file paths.
+---
 ## Files:
 #### Note: for actual code, there is only one .py file used for this, "SunsetRun.py." There is a launch.json file, but it's irrelevant to the project, and is just a default file in vscode for debugging. I will go over the rest of the files included for this project first:
 ---
