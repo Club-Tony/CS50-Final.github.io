@@ -730,9 +730,6 @@ while run:
 # if loop ends, game quits, sys.exit for smooth program termination and cleanup operations   
 pygame.quit()
 sys.exit()
- 
- 
-# Time to complete game: ~2 min 10 sec if default screen size, ~1 min 40 sec if not. ~30 sec difference
 
  
 # Credits: 
