@@ -2,9 +2,14 @@
 import pygame
 import sys
 
-# initialize all pygame modules, and .mixer specifically for better audio control
+# initialize all pygame modules, and the .mixer module specifically, for better audio control
 pygame.init()
-pygame.mixer.init()
+
+# incase device can't do audio (which cs50 codespace can't), implement a try except block
+try:
+    pygame.mixer.init()
+except pygame.error:
+    print("No audio device found, running without audio")
 
 # set clock and fps so game runs at intended speed, set night cycle clock
 clock = pygame.time.Clock()
@@ -54,7 +59,7 @@ counter_frame = 0
 sprite_facing = "right"
 
 # SPRITE ANIMATION: Load one for idle frame, create list for frames 2-7
-sprite_idle =  pygame.image.load("Player/1.png").convert_alpha()
+sprite_idle = pygame.image.load("Player/1.png").convert_alpha()
 
 sprite_run = []
 for i in range(2, 8):
@@ -87,7 +92,6 @@ sprite_position = ((screen_width // 2) - (sprite_width // 2), screen_height - sp
     
 # draw sprite (animation and idle)
 def draw_sprite(screen_width, screen_height, sprite_position): 
-    
     current_sprite = sprite_run[current_frame] 
     current_idle_sprite = sprite_idle
     
@@ -178,7 +182,7 @@ tent_height = tent.get_height() * 1.3
 
 # load and (later) play music, -1 arg for indefinite loop, make it muted/off by default
 # also create a boolean variable for volume muting and for first toggle to make it so music not playing at first
-music = pygame.mixer.music.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\Music\\Moon boots i want your attention loop.mp3")
+music = pygame.mixer.music.load("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\Music\\Moon boots i want your attention loop.mp3")
 pygame.mixer.music.set_volume(0.75)
                                           
 volume_toggle = False
@@ -590,7 +594,7 @@ while run:
             button_y = (screen_height - button_height) * 0.7
             button_rect = pygame.Rect(button_x, button_y, int(button_width), int(button_height))
             exit_button = pygame.font.Font(None, 85)
-            congrats = pygame.font.Fontcongrats = pygame.font.Font("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\ChrustyRock-ORLA.ttf", 93)
+            congrats = pygame.font.Font("C:\\Users\\Davey\\Documents\\GitHub\\CS50-Final.github.io\\CS50-Final-Pygame\\ChrustyRock-ORLA.ttf", 93)
         
         # draw you win text and exit button/text
         screen.blit(congrats_render, (congrats_text_center_x, congrats_text_center_y))
