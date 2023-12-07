@@ -8,12 +8,12 @@
 #### Note: for actual code, there is only one .py file used for this, "SunsetRun.py." There is a launch.json file, but it's irrelevant to the project, and is just a default file in vscode for debugging. I will go over the rest of the files included for this project first:
 ---
 ### Music:
----
+
 #### Moon boots i want your attention loop.mp3
 ##### An mp3 of the song: Moon Boots - I Want Your Attention, edited by me in FL Studio DAW for conciseness and so it loops smoothly.
 ---
 ### Fonts: 
----
+
 #### Default pygame font:
 ##### For exit button text, controls, and stamina bar
 ---
@@ -24,7 +24,7 @@
 ##### For welcome screen and congratulations screen
 ---
 ### Images (.png):
----
+
 #### L1, L2, L3, L4, L5, and L6.png:
 ##### Background layers for parallax scrolling background
 ---
