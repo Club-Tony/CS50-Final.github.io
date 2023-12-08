@@ -5,7 +5,7 @@ Download the "Sunset Run" folder from google drive (https://drive.google.com/dri
 Extract wherever. 
 More than likely, the SunsetRun.exe file will need
 to be downloaded separately, as it will be flagged as malware because I'm an unrecognized publisher. 
-Download SunsetRun.exe
+Download SunsetRun.exe in google drive folder or this github folder by downloading the raw.
 Move SunsetRun.exe into your recently extracted Sunset Run folder on your computer.
 Run SunsetRun.exe, click run anyways as it will be flagged as suspicious
 
