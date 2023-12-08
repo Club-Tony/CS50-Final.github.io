@@ -8,7 +8,7 @@
 #### Github link to SunsetRun.py and SunsetRun.exe: https://github.com/Club-Tony/CS50-Final.github.io/tree/main/CS50-Final-Pygame
 ---
 # Installation:
-### https://drive.google.com/drive/u/0/folders/1b7yacvbznR1J3Kf1ABDROMUERSq-T11q
+### https://drive.google.com/drive/u/0/folders/14eEOFYOJt43Cw41fB7fDK-_90E1IsdFD
 
 ### To play in local IDE: <br> Download "Sunset Run" folder above, and all of its contents (except the .exe). Unzip, and make sure pygame is installed in your IDE by typing into your terminal: pip install pygame
 
