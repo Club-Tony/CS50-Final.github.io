@@ -531,17 +531,24 @@ while run:
             # rescale variable for original and current screen size to use for rescaling
             rescaler = screen_width / og_screen_width
             
+            # make scroll speed adjust with window size variable
+            scroll_speed_adjust = scroll * 6
+            
+            rescaled_screen_width = screen_width * rescaler
+            rescaled_shelter_width = shelter_width * rescaler
+            rescaled_tent_width = tent_width * rescaler
+            
             # make rescaled variables, use round to make sure it returns an int
             rescaled_shelter_width = shelter.get_width() * 0.5
             rescaled_shelter_height = shelter.get_height() * 0.5
             rescaled_shelter = pygame.transform.scale(shelter, (rescaled_shelter_width, rescaled_shelter_height))
-            shelter_x = ((screen_width) - (rescaled_shelter_width) - (scroll * 6 + 89200) + 179260) * rescaler
+            shelter_x = ((rescaled_screen_width) - (rescaled_shelter_width) - (scroll_speed_adjust + 89200) + 179260)
             shelter_y = (screen_height - rescaled_shelter_height) * 0.885
             
             rescaled_tent_width = tent.get_width() * 0.5
             rescaled_tent_height = tent.get_height() * 0.5
             rescaled_tent = pygame.transform.scale(tent, (rescaled_tent_width, rescaled_tent_height))
-            tent_x = ((screen_width) - (rescaled_tent_width) - (scroll * 6 + 89200) + 179375) * rescaler
+            tent_x = ((rescaled_screen_width) - (rescaled_tent_width) - (scroll_speed_adjust + 89200) + 179340)
             tent_y = (screen_height - rescaled_tent_height) * 0.885
             
             if 0 <= shelter_x <= screen_width:

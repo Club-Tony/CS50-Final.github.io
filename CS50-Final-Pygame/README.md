@@ -1,55 +1,50 @@
 # Sunset Run
-### Video Demo:  <URL HERE>
+### Video Demo:  https://www.youtube.com/watch?v=haHnsTj2VpM
 ### Description:
-### Sidescroller game named Sunset Run, made through python with the pygame library, a library for writing video games. This was made through my local vscode on my pc, then transferred to cs50's codespace to turn it in with submit50. 
+### Sidescroller game named Sunset Run, made with Python and Pygame, a library for writing video games. This was made through my local vscode on my pc, then translated to cs50's codespace to be able to turn it in with submit50. 
 ---
-### Instructions for cs50 staff:
-### IMPORTANT NOTE: Pygame window does not open in cs50's codespace environment (at least for me). The game works fine if opened as an executable or if ran on a local codespace.
-### Github link to SunsetRun.py and SunsetRun.exe: https://github.com/Club-Tony/CS50-Final.github.io/tree/main/CS50-Final-Pygame
+### Note for CS50 staff:
+#### IMPORTANT: Pygame window does not open in cs50's codespace environment (at least for me). The game works fine if opened as an executable or if ran on a local codespace.
+#### Github link to SunsetRun.py and SunsetRun.exe: https://github.com/Club-Tony/CS50-Final.github.io/tree/main/CS50-Final-Pygame
+---
+# Installation:
+### https://drive.google.com/drive/u/0/folders/1b7yacvbznR1J3Kf1ABDROMUERSq-T11q
 
-### To open in local environment (cs50 and cloud codespaces may not work), download everything from above link and make sure pygame is installed in codespace (pip install pygame)
+### To play in local IDE: <br> Download "Sunset Run" folder above, and all of its contents (except the .exe). Unzip, and make sure pygame is installed in your IDE by typing into your terminal: pip install pygame
 
-### To open the .exe, download the .exe from the Google Drive link in the above link. Google drive because the file size is larger than 25mb so github won't hold it. Ignore the suspicious file flag (I'm an unrecognized publisher so it automatically flags as suspicious).
+### To play with the .exe: <br> Download the "Sunset Run" folder,  .exe from the Google Drive link in the above link. Google drive because the file size is larger than 25mb so github won't hold it. Ignore the suspicious file flag (I'm an unrecognized publisher so it automatically flags as suspicious).
+---
+### Note: Cloud codespaces may not work to open the pygame window properly, so use your IDE locally if possible. 
 
-### Also make sure your computer's scale and layout settings are at 100% or lower. If higher, game window may be oversized for users with 1920 x 1080 resolution monitors. On windows: Settings - Display - Scale and layout: 100%
+### Also, make sure your computer's scale and layout settings are at 100% or lower. If higher, game window may be oversized for users with 1920 x 1080 resolution monitors. On windows: Settings - Display - Scale and layout: 100%
 ---
 ### Changes I had to make when importing this project into cs50's codespace:
-#### Music: Unfortunately I had to make it so game ran without the option for music because cs50 doesn't support audio, at least not pygame's audio device. 
+#### Music: Made the option so game can run without music if necessary, because cs50 doesn't support audio, at least not pygame's audio device. 
+---
+# Files:
 
-#### Directory for loading .pngs (images) and .ttfs (fonts): Had to manually change all my original absolute file paths for loading files into relative file paths.
----
-## Files:
-#### Note: for actual code, there is only one .py file used for this, "SunsetRun.py." There is a launch.json file, but it's irrelevant to the project, and is just a default file in vscode for debugging. I will go over the rest of the files included for this project first:
----
 ### Music:
 
-#### Moon boots i want your attention loop.mp3
-##### An mp3 of the song: Moon Boots - I Want Your Attention, edited by me in FL Studio DAW for conciseness and so it loops smoothly.
+#### "Moon boots i want your attention loop.mp3" <br> an mp3 of the song: Moon Boots - I Want Your Attention, edited by me in FL Studio DAW for conciseness and so it loops smoothly.
 ---
 ### Fonts: 
 
-#### Default pygame font:
-##### For exit button text, controls, and stamina bar
----
-#### Branda-yolq.ttf:
-##### For game over screen
----
-#### ChrustyRock-ORLA.ttf:
-##### For welcome screen and congratulations screen
+#### "Default pygame font" <br> for exit button text, controls, and stamina bar
+
+#### "Branda-yolq.ttf" <br> for game over screen
+
+#### "ChrustyRock-ORLA.ttf" <br> for welcome screen and congratulations screen
 ---
 ### Images (.png):
 
-#### L1, L2, L3, L4, L5, and L6.png:
-##### Background layers for parallax scrolling background
+#### L1.png, L2, L3, L4, L5, and L6.png <br> background layers for parallax scrolling background
+
+#### 1.png, 2, 3, 4, 5, 6, and 7.png <br> sprite frames, for idle still and running animation
+
+#### "fire.png" and "tent.png" <br> bonfire with a cooking pot on top, and a tent. Found at end of the game.
 ---
-#### 1, 2, 3, 4, 5, 6, and 7.png:
-##### Sprite frames, for idle still and running animation
----
-#### fire.png and tent.png:
-##### Bonfire with a cooking pot on top, and a tent. Found at end of the game.
----
-## SunsetRun.py file:
-### This is the file with all the code that makes this game run. Below I will go over all the features and what they do. 
+## "SunsetRun.py"
+### This is the Python file with all the code that makes this game run. Below I will go over all the features and what they do. 
 ---
 ### First, I think it's important to mention the goal of the game, and overall mechanics. Game starts, sprite is standing still. Sprite is centered in the middle of the screen throughout the game. There is a night cycle, so it will slowly start to get dark as time passes. Sprite can't move left at start, but can move right. The goal is to travel about 15000 (pixels) to the right to find shelter. If it gets too dark, game over. If you make it to shelter, congrats screen appears.
 ---
