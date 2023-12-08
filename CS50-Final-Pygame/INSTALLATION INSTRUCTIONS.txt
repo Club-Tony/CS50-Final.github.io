@@ -1,7 +1,7 @@
 INSTALLATION INSTRUCTIONS:
 
 For playing the .exe:
-Download the "Sunset Run" folder from google drive. 
+Download the "Sunset Run" folder from google drive (https://drive.google.com/drive/u/0/folders/14eEOFYOJt43Cw41fB7fDK-_90E1IsdFD). 
 Extract wherever. 
 More than likely, the SunsetRun.exe file will need
 to be downloaded separately, as it will be flagged as malware because I'm an unrecognized publisher. 
