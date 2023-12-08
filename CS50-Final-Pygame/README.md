@@ -12,7 +12,7 @@
 
 ### To play in local IDE: <br> Download "Sunset Run" folder above, and all of its contents (except the .exe). Unzip, and make sure pygame is installed in your IDE by typing into your terminal: pip install pygame
 
-### To play with the .exe: <br> Download the "Sunset Run" folder,  .exe from the Google Drive link in the above link. Google drive because the file size is larger than 25mb so github won't hold it. Ignore the suspicious file flag (I'm an unrecognized publisher so it automatically flags as suspicious).
+### To play with the .exe: <br> Download the "Sunset Run" folder, then the .exe separately either from the Google Drive folder in the above link or in this github folder by downloading the raw. Ignore the suspicious file flag (I'm an unrecognized publisher so it automatically flags as suspicious).
 ---
 ### Note: Cloud codespaces may not work to open the pygame window properly, so use your IDE locally if possible. 
 
