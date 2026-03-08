@@ -1,4 +1,4 @@
-# AGENTS.md
+# CODEX.md
 
 CS50 final project repo with both a Pygame project and a Flask website.
 
